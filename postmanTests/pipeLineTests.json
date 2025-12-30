@@ -1,0 +1,115 @@
+{
+	"info": {
+		"_postman_id": "94a1a36a-7d50-465e-aa93-83ca2d4b60cd",
+		"name": "PipeLine",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45276265"
+	},
+	"item": [
+		{
+			"name": "Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Ensure response status is 200",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Ensure response is valid JSON",
+							"pm.test(\"Response is valid JSON\", function () {",
+							"    pm.response.to.be.withBody;",
+							"    pm.test(\"Body parses as JSON\", function () {",
+							"        pm.expect(() => pm.response.json()).to.not.throw();",
+							"    });",
+							"});",
+							"",
+							"// Parse JSON once for reuse",
+							"let json;",
+							"try {",
+							"    json = pm.response.json();",
+							"} catch (e) {",
+							"    json = null;",
+							"}",
+							"",
+							"// Ensure top-level structure exists",
+							"pm.test(\"Response has an object body\", function () {",
+							"    pm.expect(json).to.be.an(\"object\");",
+							"});",
+							"",
+							"// id: present and is UUID-like string",
+							"pm.test(\"id is present and is a non-empty string\", function () {",
+							"    pm.expect(json).to.have.property(\"id\");",
+							"    pm.expect(json.id).to.be.a(\"string\").that.is.not.empty;",
+							"});",
+							"",
+							"// Optionally assert UUID pattern (basic check)",
+							"pm.test(\"id looks like a UUID\", function () {",
+							"    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;",
+							"    pm.expect(json.id).to.match(uuidRegex);",
+							"});",
+							"",
+							"// message: present and contains expected words",
+							"pm.test(\"message is present and is a non-empty string\", function () {",
+							"    pm.expect(json).to.have.property(\"message\");",
+							"    pm.expect(json.message).to.be.a(\"string\").that.is.not.empty;",
+							"});",
+							"",
+							"// Optional: check message content (non-strict)",
+							"pm.test(\"message contains 'running' or 'StepUp'\", function () {",
+							"    const msg = (json && json.message) ? json.message.toLowerCase() : \"\";",
+							"    pm.expect(msg).to.satisfy(m => m.includes(\"running\") || m.includes(\"stepup\"));",
+							"});",
+							"",
+							"// timestamp: present and is numeric (string or number)",
+							"pm.test(\"timestamp is present and is numeric (string or number)\", function () {",
+							"    pm.expect(json).to.have.property(\"timestamp\");",
+							"    const ts = json.timestamp;",
+							"    // Accept numeric or numeric-string",
+							"    pm.expect(!isNaN(Number(ts))).to.be.true;",
+							"});",
+							"",
+							"// Optional: timestamp reasonable (ms since epoch)",
+							"pm.test(\"timestamp represents a plausible epoch millis value\", function () {",
+							"    const tsNum = Number(json.timestamp);",
+							"    // check between Jan 1 2000 and Jan 1 2100 (in ms)",
+							"    const min = new Date(\"2000-01-01\").getTime();",
+							"    const max = new Date(\"2100-01-01\").getTime();",
+							"    pm.expect(tsNum).to.be.within(min, max);",
+							"});",
+							"",
+							"// Full-schema sanity test",
+							"pm.test(\"Response contains only expected keys\", function () {",
+							"    const allowedKeys = [\"id\", \"message\", \"timestamp\"];",
+							"    const keys = json ? Object.keys(json) : [];",
+							"    // ensure every returned key is allowed",
+							"    pm.expect(keys.every(k => allowedKeys.includes(k))).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8043/status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8043",
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
