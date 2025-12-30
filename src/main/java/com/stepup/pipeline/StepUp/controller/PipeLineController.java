@@ -13,6 +13,6 @@ public class PipeLineController {
     public ResponseEntity<?> status() {
         PipeLineStatusResponse response = new PipeLineStatusResponse();
         response.setMessage("StepUp Pipeline is running");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.badRequest().build();
     }
 }
